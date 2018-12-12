@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Monster Slayer</title>
+    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="css/foundation.min.css">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+
+<body>
+    <div id="app">
+        <section class="row">
+            <div class="small-6 columns">
+                <h1 class="text-center">YOU</h1>
+                <div class="healthbar">
+                    <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;"
+                        v-bind:style="{width:pH+'%'}">
+
+                    </div>
+                </div>
+            </div>
+            <div class="small-6 columns">
+                <h1 class="text-center">MONSTER</h1>
+                <div class="healthbar">
+                    <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;"
+                        v-bind:style="{width:mH+'%'}">
+
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="row controls">
+            <div class="small-12 columns">
+                <button id="start-game" @click="startNewGame">START NEW GAME</button>
+            </div>
+        </section>
+        <section class="row controls">
+            <div class="small-12 columns">
+                <button id="attack" @click="playerMoves">ATTACK</button>
+                <button id="special-attack" @click="playerMoves">SPECIAL ATTACK</button>
+                <button id="heal" @click="playerMoves">HEAL</button>
+                <button id="give-up" @click="playerMoves">GIVE UP</button>
+            </div>
+        </section>
+        <section class="row log">
+            <div class="small-12 columns">
+                <ul>
+                    <li v-for="msg in msgs">
+                        <span :class="msg.class">
+                            {{msg.msg}}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</body>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            msgs: [],
+            pH: 0,
+            mH: 0,
+            gameInSession: false
+        },
+        computed: {
+
+        },
+        watch: {
+            pH: function () {
+                if (this.pH == 0) {
+                    this.gameInSession = false;
+                    this.clearMsgs();
+                    this.addMsg("YOU LOST!!!", "red-text");
+                }
+            },
+            mH: function () {
+                if (this.mH == 0) {
+                    this.gameInSession = false;
+                    this.clearMsgs();
+                    this.addMsg("YOU WIN!!!", "green-text");
+                }
+            }
+        },
+        methods: {
+            addMsg: function (message, cssClass) {
+                this.msgs.push({
+                    msg: message,
+                    class: cssClass
+                });
+            },
+            clearMsgs: function () {
+                this.msgs = [];
+            },
+            calculateDamage: function (actor, hp) {
+                return actor - hp >= 0 ? actor - hp : 0;
+            },
+            calculateHealth: function (actor, hp) {
+                return actor + hp <= 100 ? actor + hp : 100;
+            },
+            startNewGame: function () {
+                this.pH = 100;
+                this.mH = 100;
+                this.clearMsgs();
+                this.gameInSession = true;
+            },
+            attackActor: function (actor) {
+                var hp = Math.floor((Math.random() * 10) + 1);
+                return this.calculateDamage(actor, hp);
+            },
+            specialAttackActor: function (actor) {
+                var hp = 5 + Math.floor((Math.random() * 8) + 1);
+                return this.calculateDamage(actor, hp);
+            },
+            healActor: function (actor) {
+                var hp = Math.floor((Math.random() * 10) + 1)
+                return this.calculateHealth(actor, hp);
+            },
+            playerMoves: function (event) {
+                if (this.gameInSession) {
+                    var command = event.srcElement.innerText.toLowerCase();
+                    if (command === "attack") {
+                        this.mH = this.attackActor(this.mH);
+                        this.addMsg("Player attacks monster!", "green-text");
+                    } else if (command === "heal") {
+                        this.pH = this.healActor(this.pH);
+                        this.addMsg("Player heals himself!", "green-text");
+                    } else if (command === "special attack") {
+                        this.mH = this.specialAttackActor(this.mH);
+                        this.addMsg("Player SPECIAL attacks monster!", "green-text");
+                    } else if (command == "give up") {
+                        this.addMsg("Player GIVES UP!", "red-text");
+                        this.pH = 0;
+                    } else {
+
+                    }
+
+                    //monster turn
+                    var randomCommandArray = ['attack', 'special attack', 'heal'];
+                    var randomCommandIndex = Math.floor((Math.random() * 3))
+                    var randomeChosenCOmmand = randomCommandArray[randomCommandIndex];
+                    if (randomeChosenCOmmand === "attack") {
+                        this.pH = this.attackActor(this.pH);
+                        this.addMsg("Monster attacks player!", "red-text");
+                    } else if (randomeChosenCOmmand === "heal") {
+                        this.mH = this.healActor(this.mH);
+                        this.addMsg("Monster heals itself!", "red-text");
+                    } else if (randomeChosenCOmmand === "special attack") {
+                        this.pH = this.specialAttackActor(this.pH);
+                        this.addMsg("Monster SPECIAL attacks player!", "red-text");
+                    }
+                    else {
+
+                    }
+
+                } else {
+                    this.clearMsgs();
+                    this.addMsg("PLEASE START A NEW GAME FIRST", "purple-text");
+                }
+            }
+        }
+    });
+</script>
+<style>
+    .purple-text {
+        color: purple;
+    }
+
+    .red-text {
+        color: red;
+    }
+
+    .green-text {
+        color: green;
+    }
+</style>
+
+</html>
